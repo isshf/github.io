@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI自动记账 App 原型（单页全量）</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <style>
+      :root{
+        --bg:#0b1020;
+        --panel:rgba(255,255,255,.06);
+        --panel2:rgba(255,255,255,.085);
+        --stroke:rgba(255,255,255,.12);
+        --text:rgba(255,255,255,.9);
+        --muted:rgba(255,255,255,.62);
+        --muted2:rgba(255,255,255,.42);
+        --brand:#6d5efc;
+        --brand2:#2ad1ff;
+        --good:#38d996;
+        --warn:#ffb020;
+        --bad:#ff4d6d;
+        --shadow:0 18px 50px rgba(0,0,0,.52);
+        --r:18px;
+        --r2:14px;
+        --pw:360px;
+        --ph:780px;
+      }
+      *{box-sizing:border-box}
+      html,body{height:100%}
+      body{
+        margin:0;
+        color:var(--text);
+        font-family:Inter,"Noto Sans SC",system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Microsoft YaHei",sans-serif;
+        background:
+          radial-gradient(1200px 800px at 10% 10%, rgba(109,94,252,.25), transparent 60%),
+          radial-gradient(1000px 700px at 90% 20%, rgba(42,209,255,.18), transparent 55%),
+          radial-gradient(900px 700px at 70% 90%, rgba(56,217,150,.14), transparent 55%),
+          var(--bg);
+      }
+      a{color:inherit;text-decoration:none}
+      .shell{display:grid;grid-template-columns:320px 1fr;min-height:100vh}
+      .side{
+        position:sticky;top:0;height:100vh;padding:22px 18px;
+        border-right:1px solid var(--stroke);
+        background:rgba(0,0,0,.25);
+        backdrop-filter:blur(12px);
+      }
+      .brand{display:flex;align-items:center;gap:12px;padding:10px 10px 16px;border-bottom:1px solid var(--stroke)}
+      .logo{
+        width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+        background:linear-gradient(135deg,var(--brand),var(--brand2));
+        border:1px solid rgba(255,255,255,.12);
+        box-shadow:0 14px 30px rgba(109,94,252,.28);
+      }
+      .bt{font-weight:800;letter-spacing:.2px}
+      .bs{font-size:12px;color:var(--muted);margin-top:3px}
+      .hint{margin:14px 10px 18px;color:var(--muted);font-size:12px}
+      .toc{height:calc(100vh - 150px);overflow:auto;padding:0 6px 10px}
+      .toc h3{margin:14px 6px 8px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted2)}
+      .toc a{
+        display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:12px;
+        color:var(--muted);border:1px solid transparent;
+      }
+      .toc a:hover{background:rgba(255,255,255,.05);color:var(--text)}
+      .toc a.active{
+        background:linear-gradient(135deg, rgba(109,94,252,.22), rgba(42,209,255,.10));
+        border-color:rgba(109,94,252,.34);
+        color:rgba(255,255,255,.92);
+      }
+      .tag{
+        margin-left:auto;font-size:11px;color:rgba(255,255,255,.72);
+        padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08);
+        border:1px solid rgba(255,255,255,.12);
+      }
+      .main{padding:22px 22px 60px}
+      .topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 6px 18px;border-bottom:1px solid var(--stroke);margin-bottom:18px}
+      .topbar h1{font-size:18px;margin:0;letter-spacing:.1px}
+      .meta{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+      .pill{
+        display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;
+        background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:var(--muted);font-size:12px
+      }
+      .pill strong{color:rgba(255,255,255,.9);font-weight:700}
+      .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(calc(var(--pw) + 22px),1fr));gap:22px;align-items:start}
+      .board{padding:12px;border-radius:18px;border:1px solid var(--stroke);background:rgba(0,0,0,.18);box-shadow:0 30px 80px rgba(0,0,0,.25)}
+      .head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:10px 10px 12px}
+      .title{font-weight:800;letter-spacing:.2px;display:flex;align-items:center;gap:10px}
+      .desc{color:var(--muted);font-size:12px;margin-top:4px}
+      .actions{display:flex;gap:8px;align-items:center}
+      .btn{
+        display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:8px 10px;font-size:12px;
+        color:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);cursor:pointer
+      }
+      .btn:hover{background:rgba(255,255,255,.09)}
+      .btn.primary{
+        background:linear-gradient(135deg, rgba(109,94,252,.95), rgba(42,209,255,.65));
+        border-color:rgba(109,94,252,.55);color:rgba(255,255,255,.95)
+      }
+      .phone{
+        width:var(--pw);height:var(--ph);margin:0 auto 10px;position:relative;overflow:hidden;
+        border-radius:36px;border:1px solid rgba(255,255,255,.18);
+        background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)), rgba(10,14,28,.82);
+        box-shadow:var(--shadow);
+      }
+      .phone:before{
+        content:"";position:absolute;top:10px;left:50%;transform:translateX(-50%);
+        width:130px;height:28px;border-radius:18px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.08);
+      }
+      .sb{height:46px;padding:14px 16px 0;display:flex;justify-content:space-between;align-items:center;color:rgba(255,255,255,.82);font-size:12px}
+      .sbr{display:flex;gap:8px;align-items:center}
+      .screen{height:calc(100% - 46px);padding:14px 14px 16px;display:flex;flex-direction:column;gap:12px}
+      .nav{display:flex;align-items:center;justify-content:space-between;gap:10px}
+      .nav .t{font-weight:800;letter-spacing:.2px}
+      .ib{
+        width:36px;height:36px;border-radius:12px;display:grid;place-items:center;
+        background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.9);
+      }
+      .card{border-radius:var(--r);border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);padding:14px}
+      .card.soft{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.10)}
+      .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+      .muted{color:var(--muted)}
+      .muted2{color:var(--muted2)}
+      .h2{font-weight:900;font-size:16px;margin:0}
+      .h3{font-weight:800;font-size:13px;margin:0;letter-spacing:.2px}
+      .small{font-size:12px}
+      .divider{height:1px;background:rgba(255,255,255,.10);margin:10px 0}
+      .badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:rgba(255,255,255,.8)}
+      .badge.good{border-color:rgba(56,217,150,.35);background:rgba(56,217,150,.12)}
+      .badge.warn{border-color:rgba(255,176,32,.35);background:rgba(255,176,32,.12)}
+      .badge.bad{border-color:rgba(255,77,109,.35);background:rgba(255,77,109,.12)}
+      .chipset{display:flex;gap:8px;flex-wrap:wrap}
+      .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);font-size:12px}
+      .list{display:flex;flex-direction:column;gap:10px}
+      .item{
+        display:grid;grid-template-columns:42px 1fr auto;gap:12px;align-items:center;
+        padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)
+      }
+      .ico{
+        width:42px;height:42px;border-radius:14px;display:grid;place-items:center;
+        border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.18)
+      }
+      .it{font-weight:750}
+      .is{color:var(--muted);font-size:12px;margin-top:2px}
+      .money{font-weight:900;letter-spacing:.2px}
+      .money.in{color:rgba(56,217,150,.95)}
+      .money.out{color:rgba(255,77,109,.95)}
+      .tabs{
+        margin-top:auto;border-radius:18px;border:1px solid rgba(255,255,255,.12);
+        background:rgba(0,0,0,.24);padding:10px 12px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px
+      }
+      .tab{padding:8px 6px;border-radius:14px;display:grid;gap:4px;place-items:center;color:rgba(255,255,255,.72);border:1px solid transparent}
+      .tab.active{color:rgba(255,255,255,.92);background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12)}
+      .tab i{font-size:16px}
+      .tab span{font-size:11px}
+      .search{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+      .search input{width:100%;border:0;outline:0;background:transparent;color:rgba(255,255,255,.9);font-size:13px}
+      .input{display:flex;flex-direction:column;gap:7px}
+      .input label{font-size:12px;color:var(--muted)}
+      .field{display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05)}
+      .field input,.field select{width:100%;background:transparent;border:0;outline:0;color:rgba(255,255,255,.9);font-size:13px}
+      .field select{appearance:none}
+      .seg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+      .opt{padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:space-between;font-size:13px}
+      .opt.active{border-color:rgba(109,94,252,.55);background:linear-gradient(135deg, rgba(109,94,252,.22), rgba(42,209,255,.08))}
+      .progress{height:10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);overflow:hidden}
+      .progress>div{height:100%;border-radius:999px;background:linear-gradient(90deg, rgba(109,94,252,.92), rgba(42,209,255,.75))}
+      .chat{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0}
+      .bubbles{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-right:6px}
+      .bubble{max-width:88%;padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);font-size:13px}
+      .bubble.me{margin-left:auto;background:linear-gradient(135deg, rgba(109,94,252,.28), rgba(42,209,255,.12));border-color:rgba(109,94,252,.32)}
+      .composer{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.22)}
+      .composer input{background:transparent;border:0;outline:0;color:rgba(255,255,255,.92);font-size:13px;padding:6px 4px}
+      .sheet{border-radius:22px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.28);padding:12px}
+      .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+      .kv{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+      .k{color:var(--muted);font-size:12px}
+      .v{font-weight:800;font-size:12px}
+      .switch{width:46px;height:26px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);position:relative}
+      .switch:after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;background:rgba(255,255,255,.88)}
+      .switch.on{background:rgba(56,217,150,.22);border-color:rgba(56,217,150,.35)}
+      .switch.on:after{left:22px;background:rgba(255,255,255,.92)}
+      .voice{display:grid;place-items:center;height:280px}
+      .mic{
+        width:120px;height:120px;border-radius:999px;display:grid;place-items:center;position:relative;
+        background:linear-gradient(135deg, rgba(109,94,252,.95), rgba(42,209,255,.65));
+        border:1px solid rgba(255,255,255,.2);box-shadow:0 25px 70px rgba(109,94,252,.35)
+      }
+      .mic:before,.mic:after{content:"";position:absolute;inset:-14px;border-radius:999px;border:1px solid rgba(109,94,252,.22)}
+      .mic:after{inset:-28px;border-color:rgba(42,209,255,.16)}
+      .receipt{height:210px;border-radius:18px;border:1px dashed rgba(255,255,255,.18);background:rgba(255,255,255,.04);display:grid;place-items:center;gap:10px}
+      .rbox{width:78%;border-radius:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:12px}
+      .line{height:9px;border-radius:999px;background:rgba(255,255,255,.12);margin:8px 0}
+      .lw{width:85%}.lm{width:65%}.ls{width:45%}
+      @media (max-width:980px){
+        .shell{grid-template-columns:1fr}
+        .side{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--stroke)}
+        .toc{height:auto;max-height:360px}
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="side">
+        <div class="brand">
+          <div class="logo"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <div>
+            <div class="bt">AI自动记账</div>
+            <div class="bs">单页全量原型 · 可直接对照开发</div>
+          </div>
+        </div>
+        <div class="hint">目录跳转 + 屏内按钮跳转，便于路由/组件拆分。</div>
+        <nav class="toc" id="toc"></nav>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <h1>AI自动记账 App · 全量原型界面（单页HTML）</h1>
+          <div class="meta">
+            <div class="pill"><i class="fa-solid fa-route"></i><strong>核心流程</strong>采集 → 识别 → 归类 → 复核 → 分析</div>
+            <div class="pill"><i class="fa-solid fa-shield"></i><strong>数据</strong>本地+云同步 · 可导出</div>
+            <div class="pill"><i class="fa-solid fa-code"></i><strong>落地</strong>每屏可直接映射路由</div>
+          </div>
+        </div>
+        <div class="grid" id="grid"></div>
+      </main>
+    </div>
+
+    <template id="boardTpl">
+      <section class="board">
+        <div class="head">
+          <div>
+            <div class="title"></div>
+            <div class="desc"></div>
+          </div>
+          <div class="actions"></div>
+        </div>
+        <div class="phone">
+          <div class="sb">
+            <div>09:41</div>
+            <div class="sbr"><i class="fa-solid fa-signal"></i><i class="fa-solid fa-wifi"></i><i class="fa-solid fa-battery-full"></i></div>
+          </div>
+          <div class="screen"></div>
+        </div>
+      </section>
+    </template>
+
+    <script>
+      const screens = [
+        { group: "起步", id: "splash", icon: "fa-bolt", tag: "0", title: "启动页", desc: "冷启动加载、初始化账本与同步状态", actions: [{ href: "#onboarding", text: "下一步", icon: "fa-arrow-right" }], html: `
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;height:100%;">
+            <div style="width:86px;height:86px;border-radius:26px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;border:1px solid rgba(255,255,255,.14);box-shadow:0 30px 70px rgba(109,94,252,.35);">
+              <i class="fa-solid fa-wand-magic-sparkles" style="font-size:34px;color:rgba(255,255,255,.95);"></i>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:22px;font-weight:900;letter-spacing:.4px;">AI自动记账</div>
+              <div class="muted" style="margin-top:6px;">更快 · 更准 · 更省心</div>
+            </div>
+            <div class="card soft" style="width:92%;">
+              <div class="row"><div class="small muted">初始化账本与规则</div><div class="badge good"><i class="fa-solid fa-circle-notch fa-spin"></i>进行中</div></div>
+              <div class="divider"></div>
+              <div class="row"><div class="small muted">同步最近7天流水</div><div class="badge warn"><i class="fa-solid fa-cloud-arrow-down"></i>等待</div></div>
+            </div>
+            <div class="muted2 small">首次使用建议绑定微信/支付宝/银行卡以提升自动化程度</div>
+          </div>` },
+
+        { group: "起步", id: "onboarding", icon: "fa-layer-group", tag: "3", title: "引导页（3屏合并展示）", desc: "价值传达 + 权限引导（通知/相机/语音）", actions: [{ href: "#auth", text: "去登录", icon: "fa-arrow-right" }], html: `
+          <div class="nav">
+            <div class="badge">跳过</div>
+            <div class="badge">1 / 3</div>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div style="width:70px;height:70px;margin:0 auto 10px;border-radius:22px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);display:grid;place-items:center;">
+              <i class="fa-solid fa-wand-magic" style="font-size:26px;color:rgba(255,255,255,.9);"></i>
+            </div>
+            <div style="font-weight:900;font-size:18px;">一句话自动记账</div>
+            <div class="muted small" style="margin-top:8px;">例如：今晚聚餐 268，用信用卡</div>
+            <div class="divider"></div>
+            <div class="seg">
+              <div class="opt active"><span>AI自动识别</span><span class="muted small"><i class="fa-solid fa-bolt"></i></span></div>
+              <div class="opt"><span>可手动修改</span><span class="muted small"><i class="fa-solid fa-pen"></i></span></div>
+            </div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">需要权限</div><div class="small muted">相机用于小票/发票识别</div></div><div class="switch on"></div></div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">语音用于快速口述记账</div><div class="switch on"></div></div>
+          </div>
+          <div class="row" style="gap:10px;">
+            <a class="btn" href="#auth" style="flex:1;justify-content:center;">下一步</a>
+            <a class="btn primary" href="#auth" style="flex:1;justify-content:center;"><i class="fa-solid fa-check"></i>开始使用</a>
+          </div>` },
+
+        { group: "起步", id: "auth", icon: "fa-fingerprint", tag: "1", title: "登录 / 注册", desc: "手机号一键登录 + 第三方登录（微信/Apple）", actions: [{ href: "#connect", text: "登录后", icon: "fa-arrow-right" }], html: `
+          <div class="nav">
+            <div class="ib"><i class="fa-solid fa-xmark"></i></div>
+            <div class="t">欢迎回来</div>
+            <div class="badge">隐私</div>
+          </div>
+          <div class="card">
+            <div style="font-size:20px;font-weight:900;">登录后自动同步账本</div>
+            <div class="muted small" style="margin-top:6px;">支持多端登录 · 端到端加密可选</div>
+            <div class="divider"></div>
+            <div class="input">
+              <label>手机号</label>
+              <div class="field"><i class="fa-solid fa-mobile-screen"></i><input value="138 0000 0000"/></div>
+            </div>
+            <div class="input" style="margin-top:10px;">
+              <label>验证码</label>
+              <div class="field"><i class="fa-solid fa-shield-halved"></i><input value="123456"/><span class="badge">获取验证码</span></div>
+            </div>
+            <div class="row" style="margin-top:12px;gap:10px;">
+              <a class="btn primary" href="#connect" style="flex:1;justify-content:center;"><i class="fa-solid fa-arrow-right-to-bracket"></i>登录</a>
+              <a class="btn" href="#connect" style="flex:1;justify-content:center;"><i class="fa-brands fa-weixin"></i>微信</a>
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <span class="small muted">登录即同意《用户协议》《隐私政策》</span>
+              <span class="small muted">离线使用</span>
+            </div>
+          </div>` },
+
+        { group: "起步", id: "connect", icon: "fa-link", tag: "1", title: "绑定账户（可跳过）", desc: "提升自动识别：交易对账、自动分类、重复消费提醒", actions: [{ href: "#home", text: "进入首页", icon: "fa-arrow-right" }], html: `
+          <div class="nav">
+            <a class="ib" href="#auth"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">连接账户</div>
+            <a class="badge" href="#home">跳过</a>
+          </div>
+          <div class="card">
+            <div class="h2">选择要连接的数据源</div>
+            <div class="muted small" style="margin-top:6px;">你可随时在设置中管理绑定与同步频率</div>
+            <div class="divider"></div>
+            <div class="list">
+              <div class="item"><div class="ico"><i class="fa-brands fa-weixin"></i></div><div><div class="it">微信支付</div><div class="is">自动导入账单 · 支持对账</div></div><span class="badge good"><i class="fa-solid fa-circle-plus"></i>连接</span></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-qrcode"></i></div><div><div class="it">支付宝</div><div class="is">自动导入账单 · 支持标签</div></div><span class="badge"><i class="fa-solid fa-circle-plus"></i>连接</span></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-credit-card"></i></div><div><div class="it">银行卡/信用卡</div><div class="is">对账 · 还款提醒 · 额度</div></div><span class="badge"><i class="fa-solid fa-circle-plus"></i>连接</span></div>
+            </div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">隐私与安全</div><div class="small muted">支持只读授权；可随时撤销</div></div><i class="fa-solid fa-shield" style="color:rgba(56,217,150,.95);"></i></div>
+          </div>
+          <a class="btn primary" href="#home" style="justify-content:center;"><i class="fa-solid fa-check"></i>完成并进入</a>` },
+
+        { group: "主流程", id: "home", icon: "fa-house", tag: "Tab", title: "首页概览（Tab：首页）", desc: "本月收支、预算进度、今日待处理（识别/对账/提醒）", actions: [{ href: "#ai-chat", text: "去AI记账", icon: "fa-wand-magic" }], html: `
+          <div class="nav">
+            <div class="ib"><i class="fa-solid fa-bell"></i></div>
+            <div class="t">本月概览</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <div class="ib"><i class="fa-solid fa-magnifying-glass"></i></div>
+              <a class="ib" href="#settings"><i class="fa-solid fa-gear"></i></a>
+            </div>
+          </div>
+          <div class="two">
+            <div class="card"><div class="muted small">支出</div><div class="money out" style="font-size:18px;margin-top:6px;">¥ 5,284</div><div class="small muted">较上月 +8%</div></div>
+            <div class="card"><div class="muted small">收入</div><div class="money in" style="font-size:18px;margin-top:6px;">¥ 12,000</div><div class="small muted">工资 · 兼职</div></div>
+          </div>
+          <div class="card">
+            <div class="row"><div><div class="h3">预算进度</div><div class="small muted">本月预算 ¥ 8,000</div></div><span class="badge warn"><i class="fa-solid fa-triangle-exclamation"></i>已用 66%</span></div>
+            <div style="margin-top:10px;" class="progress"><div style="width:66%;"></div></div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">超支风险分类</div><a class="badge" href="#budgets">查看</a></div>
+            <div class="chipset" style="margin-top:10px;">
+              <span class="chip"><i class="fa-solid fa-utensils"></i>餐饮 72%</span>
+              <span class="chip"><i class="fa-solid fa-car"></i>交通 64%</span>
+              <span class="chip"><i class="fa-solid fa-bag-shopping"></i>购物 58%</span>
+            </div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">今日待处理</div><div class="small muted">识别/对账/提醒</div></div><span class="badge"><i class="fa-solid fa-inbox"></i>3</span></div>
+            <div class="divider"></div>
+            <div class="list">
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-camera"></i></div><div><div class="it">小票待确认</div><div class="is">星巴克 · ¥ 38.00</div></div><a class="badge" href="#confirm">处理</a></div>
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-credit-card"></i></div><div><div class="it">信用卡还款提醒</div><div class="is">招商银行 · 3天后到期</div></div><span class="badge">设置</span></div>
+            </div>
+          </div>
+          ${tabs("home")}` },
+
+        { group: "主流程", id: "ledger", icon: "fa-list", tag: "Tab", title: "明细列表（Tab：明细）", desc: "按天/按账户/按分类筛选，支持搜索与批量操作", actions: [{ href: "#tx-detail", text: "打开详情", icon: "fa-arrow-right" }], html: `
+          <div class="nav">
+            <div class="ib"><i class="fa-solid fa-sliders"></i></div>
+            <div class="t">明细</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <div class="ib"><i class="fa-solid fa-magnifying-glass"></i></div>
+              <a class="ib" href="#ai-chat"><i class="fa-solid fa-plus"></i></a>
+            </div>
+          </div>
+          <div class="search"><i class="fa-solid fa-magnifying-glass"></i><input value="星巴克 / 地铁 / 外卖"/><span class="badge">筛选</span></div>
+          <div class="chipset">
+            <span class="chip"><i class="fa-solid fa-calendar"></i>本月</span>
+            <span class="chip"><i class="fa-solid fa-wallet"></i>全部账户</span>
+            <span class="chip"><i class="fa-solid fa-tag"></i>全部分类</span>
+            <span class="chip"><i class="fa-solid fa-rotate"></i>仅未对账</span>
+          </div>
+          <div class="card">
+            <div class="row"><div><div class="h3">今天</div><div class="small muted">3 笔 · 支出 ¥ 182</div></div><span class="badge warn"><i class="fa-solid fa-circle-exclamation"></i>待确认 1</span></div>
+            <div class="divider"></div>
+            <div class="list">
+              <a class="item" href="#tx-detail"><div class="ico"><i class="fa-solid fa-mug-hot"></i></div><div><div class="it">星巴克</div><div class="is">餐饮 · 微信支付 · 09:12</div></div><div class="money out">-¥38.00</div></a>
+              <div class="item"><div class="ico"><i class="fa-solid fa-train-subway"></i></div><div><div class="it">地铁</div><div class="is">交通 · 交通卡 · 08:30</div></div><div class="money out">-¥6.00</div></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-burger"></i></div><div><div class="it">外卖</div><div class="is">餐饮 · 支付宝 · 00:12</div></div><div class="money out">-¥138.00</div></div>
+            </div>
+          </div>
+          ${tabs("ledger")}` },
+
+        { group: "主流程", id: "ai-chat", icon: "fa-wand-magic", tag: "Tab", title: "AI记账对话（Tab：AI）", desc: "自然语言/图片/语音混合输入；AI给出结构化账单草稿", actions: [{ href: "#confirm", text: "去确认", icon: "fa-circle-check" }], html: `
+          <div class="nav">
+            <div class="ib"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <div class="t">AI记账</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <a class="ib" href="#scan"><i class="fa-solid fa-camera"></i></a>
+              <a class="ib" href="#ai-voice"><i class="fa-solid fa-microphone"></i></a>
+            </div>
+          </div>
+          <div class="chat">
+            <div class="bubbles">
+              <div class="bubble me">昨晚和同事聚餐 268，用信用卡，地点万象城。</div>
+              <div class="bubble">已识别为一笔支出：金额 ¥268，分类 餐饮/聚餐，账户 信用卡，时间 昨天 20:14。是否需要AA拆分？</div>
+              <div class="bubble me">AA 两个人，我付全额。</div>
+              <div class="bubble">已创建拆分：你 ¥134（餐饮），应收 ¥134（待收）。可一键确认入账或继续修改。</div>
+            </div>
+            <div class="sheet">
+              <div class="row"><div class="badge warn"><i class="fa-solid fa-circle-info"></i>草稿</div><a class="badge" href="#tx-edit">编辑</a></div>
+              <div class="two" style="margin-top:10px;">
+                <div class="kv"><div class="k">金额</div><div class="v">¥ 268.00</div></div>
+                <div class="kv"><div class="k">类型</div><div class="v">支出</div></div>
+                <div class="kv"><div class="k">分类</div><div class="v">餐饮</div></div>
+                <div class="kv"><div class="k">账户</div><div class="v">信用卡</div></div>
+              </div>
+              <div class="divider"></div>
+              <div class="row" style="gap:10px;">
+                <a class="btn" href="#confirm" style="flex:1;justify-content:center;"><i class="fa-solid fa-check"></i>确认入账</a>
+                <a class="btn primary" href="#rules" style="flex:1;justify-content:center;"><i class="fa-solid fa-wand-magic-sparkles"></i>保存为规则</a>
+              </div>
+            </div>
+            <div class="composer">
+              <input value="例如：中午麦当劳 35，用微信，记到餐饮"/>
+              <div class="ib"><i class="fa-solid fa-image"></i></div>
+              <div class="ib"><i class="fa-solid fa-paper-plane"></i></div>
+            </div>
+          </div>
+          ${tabs("ai-chat")}` },
+
+        { group: "主流程", id: "ai-voice", icon: "fa-microphone", tag: "1", title: "语音记账", desc: "按住说话；实时转写；识别金额/分类/账户", actions: [{ href: "#confirm", text: "生成草稿", icon: "fa-circle-check" }], html: `
+          <div class="nav">
+            <a class="ib" href="#ai-chat"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">语音记账</div>
+            <div class="badge">中文</div>
+          </div>
+          <div class="voice">
+            <div style="text-align:center;width:100%;">
+              <div class="mic"><i class="fa-solid fa-microphone" style="font-size:34px;color:rgba(255,255,255,.95);"></i></div>
+              <div style="margin-top:14px;font-weight:900;">正在聆听…</div>
+              <div class="muted small" style="margin-top:6px;">“地铁 6 块，用交通卡”</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="row"><div class="h3">实时转写</div><span class="badge good"><i class="fa-solid fa-wave-square"></i>稳定</span></div>
+            <div class="divider"></div>
+            <div class="small">地铁 6 块，用交通卡，今天早上。</div>
+            <div class="divider"></div>
+            <div class="two">
+              <div class="kv"><div class="k">金额</div><div class="v">¥ 6.00</div></div>
+              <div class="kv"><div class="k">分类</div><div class="v">交通</div></div>
+              <div class="kv"><div class="k">账户</div><div class="v">交通卡</div></div>
+              <div class="kv"><div class="k">时间</div><div class="v">今天 08:30</div></div>
+            </div>
+          </div>
+          <div class="row" style="gap:10px;margin-top:auto;">
+            <a class="btn" href="#ai-chat" style="flex:1;justify-content:center;">取消</a>
+            <a class="btn primary" href="#confirm" style="flex:1;justify-content:center;"><i class="fa-solid fa-check"></i>确认草稿</a>
+          </div>` },
+
+        { group: "主流程", id: "scan", icon: "fa-camera", tag: "1", title: "小票/发票扫描", desc: "拍照 + 自动裁边矫正 + OCR识别", actions: [{ href: "#confirm", text: "识别结果", icon: "fa-arrow-right" }], html: `
+          <div class="nav">
+            <a class="ib" href="#ai-chat"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">扫描</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <div class="ib"><i class="fa-solid fa-bolt"></i></div>
+              <div class="ib"><i class="fa-solid fa-rotate-right"></i></div>
+            </div>
+          </div>
+          <div class="receipt">
+            <div style="text-align:center;">
+              <i class="fa-solid fa-receipt" style="font-size:26px;color:rgba(255,255,255,.9);"></i>
+              <div style="margin-top:8px;font-weight:900;">对准小票</div>
+              <div class="muted small" style="margin-top:4px;">自动裁切 · 光线不足会提示</div>
+            </div>
+            <div class="rbox">
+              <div class="line lw"></div><div class="line lm"></div><div class="line lw"></div><div class="line ls"></div><div class="line lm"></div>
+            </div>
+          </div>
+          <a class="btn primary" href="#confirm" style="justify-content:center;margin-top:auto;"><i class="fa-solid fa-camera"></i>拍照并识别</a>` },
+
+        { group: "主流程", id: "confirm", icon: "fa-circle-check", tag: "1", title: "识别确认（关键）", desc: "AI结构化：金额/分类/商户/账户/标签；支持修改与规则学习", actions: [{ href: "#ledger", text: "入账后", icon: "fa-arrow-right" }], html: `
+          <div class="nav">
+            <a class="ib" href="#ai-chat"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">确认入账</div>
+            <div class="badge warn"><i class="fa-solid fa-robot"></i>AI草稿</div>
+          </div>
+          <div class="card">
+            <div class="row">
+              <div><div class="h2">星巴克（万象城）</div><div class="small muted">来自：小票识别 · 置信度 0.92</div></div>
+              <div class="money out" style="font-size:18px;">-¥38.00</div>
+            </div>
+            <div class="divider"></div>
+            <div class="two">
+              <div class="input"><label>分类</label><div class="field"><i class="fa-solid fa-utensils"></i><select><option>餐饮</option><option>咖啡</option><option>零食</option></select></div></div>
+              <div class="input"><label>账户</label><div class="field"><i class="fa-solid fa-wallet"></i><select><option>微信支付</option><option>支付宝</option><option>现金</option></select></div></div>
+            </div>
+            <div class="two" style="margin-top:10px;">
+              <div class="input"><label>时间</label><div class="field"><i class="fa-solid fa-clock"></i><input value="今天 09:12"/></div></div>
+              <div class="input"><label>标签</label><div class="field"><i class="fa-solid fa-tags"></i><input value="咖啡, 上班"/></div></div>
+            </div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">保存“星巴克 → 餐饮/咖啡”为自动规则</div><div class="switch on"></div></div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">相似交易提醒</div><div class="small muted">本周已在该商户消费 3 次</div></div><span class="badge good"><i class="fa-solid fa-lightbulb"></i>建议</span></div>
+            <div class="divider"></div>
+            <div class="row" style="gap:10px;">
+              <a class="btn" href="#budgets" style="flex:1;justify-content:center;">设咖啡预算</a>
+              <a class="btn" href="#rules" style="flex:1;justify-content:center;">查看规则</a>
+            </div>
+          </div>
+          <div class="row" style="gap:10px;margin-top:auto;">
+            <a class="btn" href="#tx-edit" style="flex:1;justify-content:center;"><i class="fa-solid fa-pen-to-square"></i>更多编辑</a>
+            <a class="btn primary" href="#ledger" style="flex:1;justify-content:center;"><i class="fa-solid fa-check"></i>确认入账</a>
+          </div>` },
+
+        { group: "主流程", id: "tx-detail", icon: "fa-file-invoice", tag: "1", title: "明细详情", desc: "查看来源、对账状态、附件、拆分、退款、备注与标签", actions: [{ href: "#tx-edit", text: "编辑", icon: "fa-pen-to-square" }], html: `
+          <div class="nav">
+            <a class="ib" href="#ledger"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">明细详情</div>
+            <div class="ib"><i class="fa-solid fa-ellipsis"></i></div>
+          </div>
+          <div class="card">
+            <div class="row">
+              <div><div class="h2">星巴克</div><div class="small muted">餐饮 · 微信支付 · 今天 09:12</div></div>
+              <div class="money out" style="font-size:18px;">-¥38.00</div>
+            </div>
+            <div class="divider"></div>
+            <div class="two">
+              <div class="kv"><div class="k">对账</div><div class="v"><span class="badge good"><i class="fa-solid fa-link"></i>已匹配</span></div></div>
+              <div class="kv"><div class="k">来源</div><div class="v">小票OCR</div></div>
+              <div class="kv"><div class="k">商户</div><div class="v">星巴克(万象城)</div></div>
+              <div class="kv"><div class="k">备注</div><div class="v">早咖</div></div>
+            </div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">标签</div><div class="chipset"><span class="chip"><i class="fa-solid fa-tag"></i>咖啡</span><span class="chip"><i class="fa-solid fa-tag"></i>上班</span></div></div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div class="h3">附件</div><span class="badge"><i class="fa-solid fa-paperclip"></i>1</span></div>
+            <div class="divider"></div>
+            <div class="receipt" style="height:150px;"><div class="rbox" style="width:70%;"><div class="line lw"></div><div class="line lm"></div><div class="line lw"></div><div class="line ls"></div></div></div>
+          </div>
+          <div class="row" style="gap:10px;margin-top:auto;">
+            <a class="btn" href="#tx-edit" style="flex:1;justify-content:center;"><i class="fa-solid fa-pen-to-square"></i>编辑</a>
+            <a class="btn primary" href="#ledger" style="flex:1;justify-content:center;"><i class="fa-solid fa-check"></i>完成</a>
+          </div>` },
+
+        { group: "主流程", id: "tx-edit", icon: "fa-pen-to-square", tag: "1", title: "编辑明细", desc: "更改金额、分类、账户；支持拆分、转账、退款、报销", actions: [{ href: "#tx-detail", text: "返回详情", icon: "fa-arrow-left" }], html: `
+          <div class="nav">
+            <a class="ib" href="#tx-detail"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">编辑</div>
+            <span class="badge">保存</span>
+          </div>
+          <div class="seg">
+            <div class="opt active"><span>支出</span><span class="muted small"><i class="fa-solid fa-arrow-up"></i></span></div>
+            <div class="opt"><span>收入</span><span class="muted small"><i class="fa-solid fa-arrow-down"></i></span></div>
+          </div>
+          <div class="card">
+            <div class="input"><label>金额</label><div class="field"><i class="fa-solid fa-yen-sign"></i><input value="38.00"/></div></div>
+            <div class="two" style="margin-top:10px;">
+              <div class="input"><label>分类</label><div class="field"><i class="fa-solid fa-utensils"></i><select><option>餐饮</option><option>交通</option><option>购物</option></select></div></div>
+              <div class="input"><label>账户</label><div class="field"><i class="fa-solid fa-wallet"></i><select><option>微信支付</option><option>支付宝</option><option>现金</option></select></div></div>
+            </div>
+            <div class="input" style="margin-top:10px;"><label>商户/项目</label><div class="field"><i class="fa-solid fa-store"></i><input value="星巴克(万象城)"/></div></div>
+            <div class="two" style="margin-top:10px;">
+              <div class="input"><label>时间</label><div class="field"><i class="fa-solid fa-clock"></i><input value="2026-03-16 09:12"/></div></div>
+              <div class="input"><label>标签</label><div class="field"><i class="fa-solid fa-tags"></i><input value="咖啡, 上班"/></div></div>
+            </div>
+            <div class="input" style="margin-top:10px;"><label>备注</label><div class="field"><i class="fa-solid fa-quote-left"></i><input value="早咖"/></div></div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div class="h3">高级操作</div><span class="badge"><i class="fa-solid fa-wand-magic-sparkles"></i>AI辅助</span></div>
+            <div class="divider"></div>
+            <div class="two">
+              <div class="item" style="grid-template-columns:42px 1fr;"><div class="ico"><i class="fa-solid fa-sitemap"></i></div><div><div class="it">拆分</div><div class="is">多项商品/AA</div></div></div>
+              <div class="item" style="grid-template-columns:42px 1fr;"><div class="ico"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div><div class="it">转账</div><div class="is">账户间转移</div></div></div>
+            </div>
+          </div>
+          <div class="row" style="gap:10px;margin-top:auto;">
+            <a class="btn" href="#tx-detail" style="flex:1;justify-content:center;">取消</a>
+            <a class="btn primary" href="#tx-detail" style="flex:1;justify-content:center;"><i class="fa-solid fa-check"></i>保存</a>
+          </div>` },
+
+        { group: "经营视图", id: "analytics", icon: "fa-chart-pie", tag: "Tab", title: "统计分析（Tab：统计）", desc: "趋势、分类占比、商户排行、预算偏差与AI洞察", actions: [{ href: "#budgets", text: "预算", icon: "fa-bullseye" }], html: `
+          <div class="nav">
+            <div class="ib"><i class="fa-solid fa-calendar"></i></div>
+            <div class="t">统计</div>
+            <div class="ib"><i class="fa-solid fa-share-nodes"></i></div>
+          </div>
+          <div class="card">
+            <div class="row"><div><div class="h3">7日支出趋势</div><div class="small muted">波动点：周五外食偏多</div></div><span class="badge"><i class="fa-solid fa-chart-line"></i>趋势</span></div>
+            <div class="divider"></div>
+            <div class="two">
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-arrow-trend-up"></i></div><div><div class="it">周均支出</div><div class="is">¥ 1,240</div></div><span class="badge">稳定</span></div>
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-bolt"></i></div><div><div class="it">异常提醒</div><div class="is">餐饮偏高</div></div><span class="badge warn">关注</span></div>
+            </div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">本月分类占比</div><div class="small muted">前三：餐饮 / 交通 / 购物</div></div><span class="badge good"><i class="fa-solid fa-lightbulb"></i>AI洞察</span></div>
+            <div class="divider"></div>
+            <div class="list">
+              <div class="item"><div class="ico"><i class="fa-solid fa-utensils"></i></div><div><div class="it">餐饮</div><div class="is">¥ 1,980 · 37%</div></div><span class="badge warn">偏高</span></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-train-subway"></i></div><div><div class="it">交通</div><div class="is">¥ 820 · 16%</div></div><span class="badge">正常</span></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-bag-shopping"></i></div><div><div class="it">购物</div><div class="is">¥ 760 · 14%</div></div><span class="badge">正常</span></div>
+            </div>
+          </div>
+          ${tabs("analytics")}` },
+
+        { group: "经营视图", id: "budgets", icon: "fa-bullseye", tag: "1", title: "预算管理", desc: "总预算 + 分类预算；超支提醒与“建议预算”", actions: [{ href: "#rules", text: "规则", icon: "fa-gears" }], html: `
+          <div class="nav">
+            <a class="ib" href="#home"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">预算</div>
+            <span class="badge">本月</span>
+          </div>
+          <div class="card">
+            <div class="row"><div><div class="h2">总预算</div><div class="small muted">¥ 8,000 · 已用 ¥ 5,284</div></div><span class="badge warn"><i class="fa-solid fa-triangle-exclamation"></i>66%</span></div>
+            <div style="margin-top:10px;" class="progress"><div style="width:66%;"></div></div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">下次提醒阈值</div><span class="badge">75%</span></div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">分类预算</div><div class="small muted">按历史消费推荐</div></div><a class="badge" href="#premium">自动推荐</a></div>
+            <div class="divider"></div>
+            <div class="list">
+              <div class="item"><div class="ico"><i class="fa-solid fa-utensils"></i></div><div><div class="it">餐饮</div><div class="is">¥ 1,980 / 2,500</div></div><span class="badge warn">79%</span></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-train-subway"></i></div><div><div class="it">交通</div><div class="is">¥ 820 / 1,200</div></div><span class="badge">68%</span></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-bag-shopping"></i></div><div><div class="it">购物</div><div class="is">¥ 760 / 1,500</div></div><span class="badge">51%</span></div>
+            </div>
+          </div>
+          <a class="btn primary" href="#settings" style="justify-content:center;margin-top:auto;"><i class="fa-solid fa-bell"></i>设置提醒与通知</a>` },
+
+        { group: "经营视图", id: "bills", icon: "fa-calendar-check", tag: "1", title: "周期账单", desc: "订阅/房租/话费等自动生成；到期提醒与自动入账", actions: [{ href: "#home", text: "回首页", icon: "fa-arrow-right" }], html: `
+          <div class="nav">
+            <a class="ib" href="#me"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">周期账单</div>
+            <div class="ib"><i class="fa-solid fa-plus"></i></div>
+          </div>
+          <div class="card">
+            <div class="row"><div><div class="h2">即将到期</div><div class="small muted">未来 7 天</div></div><span class="badge warn"><i class="fa-solid fa-clock"></i>2</span></div>
+            <div class="divider"></div>
+            <div class="list">
+              <div class="item"><div class="ico"><i class="fa-brands fa-spotify"></i></div><div><div class="it">Spotify 会员</div><div class="is">每月 · 3天后 · 账户：信用卡</div></div><div class="money out">-¥15.00</div></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-house"></i></div><div><div class="it">房租</div><div class="is">每月 · 6天后 · 账户：转账</div></div><div class="money out">-¥3,500</div></div>
+            </div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">自动化</div><div class="small muted">到期自动生成明细草稿</div></div><div class="switch on"></div></div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">缺少账单？</div><a class="badge" href="#ai-chat">让AI帮你添加</a></div>
+          </div>
+          <a class="btn primary" href="#rules" style="justify-content:center;margin-top:auto;"><i class="fa-solid fa-gears"></i>设置账单规则</a>` },
+
+        { group: "经营视图", id: "assets", icon: "fa-wallet", tag: "1", title: "账户资产", desc: "账户列表、净资产、转账、余额对账与同步状态", actions: [{ href: "#export", text: "导出", icon: "fa-file-export" }], html: `
+          <div class="nav">
+            <a class="ib" href="#me"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">账户资产</div>
+            <div class="ib"><i class="fa-solid fa-arrow-right-arrow-left"></i></div>
+          </div>
+          <div class="card">
+            <div class="row"><div><div class="h2">净资产</div><div class="small muted">已连接 3 个账户</div></div><div style="text-align:right;"><div style="font-size:20px;font-weight:900;">¥ 86,420</div><div class="small muted">今日 +¥120</div></div></div>
+            <div class="divider"></div>
+            <div class="row"><span class="badge good"><i class="fa-solid fa-cloud"></i>同步正常</span><span class="badge"><i class="fa-solid fa-clock-rotate-left"></i>2分钟前</span></div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div class="h3">账户</div><span class="badge"><i class="fa-solid fa-plus"></i>新增</span></div>
+            <div class="divider"></div>
+            <div class="list">
+              <div class="item"><div class="ico"><i class="fa-brands fa-weixin"></i></div><div><div class="it">微信支付</div><div class="is">余额 · 可对账</div></div><div class="money in">¥ 3,420</div></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-credit-card"></i></div><div><div class="it">信用卡（招商）</div><div class="is">本期应还 · 3天后到期</div></div><div class="money out">¥ 2,980</div></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-building-columns"></i></div><div><div class="it">储蓄卡</div><div class="is">工资入账账户</div></div><div class="money in">¥ 86,000</div></div>
+            </div>
+          </div>
+          <a class="btn primary" href="#rules" style="justify-content:center;margin-top:auto;"><i class="fa-solid fa-gears"></i>设置自动对账与分类</a>` },
+
+        { group: "经营视图", id: "rules", icon: "fa-gears", tag: "1", title: "自动化规则", desc: "商户→分类/账户/标签；对账匹配；重复订阅识别；提醒", actions: [{ href: "#ai-chat", text: "从AI保存", icon: "fa-wand-magic-sparkles" }], html: `
+          <div class="nav">
+            <a class="ib" href="#settings"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">自动化规则</div>
+            <div class="ib"><i class="fa-solid fa-plus"></i></div>
+          </div>
+          <div class="card">
+            <div class="row"><div><div class="h2">规则总览</div><div class="small muted">命中率越高，越接近“全自动记账”</div></div><span class="badge good"><i class="fa-solid fa-bullseye"></i>命中 78%</span></div>
+            <div class="divider"></div>
+            <div class="list">
+              <div class="item"><div class="ico"><i class="fa-solid fa-mug-hot"></i></div><div><div class="it">星巴克</div><div class="is">分类：餐饮/咖啡 · 账户：微信 · 标签：上班</div></div><div class="switch on"></div></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-burger"></i></div><div><div class="it">外卖平台</div><div class="is">分类：餐饮 · 晚餐时段标记</div></div><div class="switch on"></div></div>
+              <div class="item"><div class="ico"><i class="fa-solid fa-repeat"></i></div><div><div class="it">重复订阅识别</div><div class="is">发现异常扣款时提醒</div></div><div class="switch on"></div></div>
+            </div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">对账策略</div><div class="small muted">按账户流水匹配；冲突需要人工确认</div></div><span class="badge">严格</span></div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">发现冲突自动生成“待处理”</div><div class="switch on"></div></div>
+          </div>` },
+
+        { group: "我的", id: "me", icon: "fa-user", tag: "Tab", title: "个人中心（Tab：我的）", desc: "账号、数据同步、快捷入口（资产/账单/规则/导出/会员）", actions: [{ href: "#settings", text: "设置", icon: "fa-gear" }], html: `
+          <div class="nav">
+            <div class="ib"><i class="fa-solid fa-user"></i></div>
+            <div class="t">我的</div>
+            <a class="ib" href="#settings"><i class="fa-solid fa-gear"></i></a>
+          </div>
+          <div class="card">
+            <div class="row">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="ico" style="width:52px;height:52px;border-radius:18px;"><i class="fa-solid fa-user"></i></div>
+                <div>
+                  <div style="font-weight:900;">小明</div>
+                  <div class="small muted">账号：138****0000</div>
+                </div>
+              </div>
+              <span class="badge good"><i class="fa-solid fa-cloud"></i>已同步</span>
+            </div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">本月目标</div><span class="badge"><i class="fa-solid fa-bullseye"></i>不超预算</span></div>
+          </div>
+          <div class="two">
+            <a class="card soft" href="#assets"><div class="row"><div class="h3">账户资产</div><i class="fa-solid fa-wallet"></i></div><div class="small muted" style="margin-top:8px;">净资产/转账/对账</div></a>
+            <a class="card soft" href="#bills"><div class="row"><div class="h3">周期账单</div><i class="fa-solid fa-calendar-check"></i></div><div class="small muted" style="margin-top:8px;">订阅/房租/提醒</div></a>
+          </div>
+          <div class="two">
+            <a class="card soft" href="#rules"><div class="row"><div class="h3">自动化规则</div><i class="fa-solid fa-gears"></i></div><div class="small muted" style="margin-top:8px;">商户映射/对账</div></a>
+            <a class="card soft" href="#export"><div class="row"><div class="h3">导出/备份</div><i class="fa-solid fa-file-export"></i></div><div class="small muted" style="margin-top:8px;">CSV/Excel/云备份</div></a>
+          </div>
+          ${tabs("me")}` },
+
+        { group: "我的", id: "settings", icon: "fa-sliders", tag: "1", title: "设置", desc: "分类管理、同步与安全、通知、语言、隐私与权限", actions: [{ href: "#export", text: "导出/备份", icon: "fa-file-export" }], html: `
+          <div class="nav">
+            <a class="ib" href="#me"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">设置</div>
+            <div class="ib"><i class="fa-solid fa-magnifying-glass"></i></div>
+          </div>
+          <div class="card">
+            <div class="row"><div><div class="h3">同步与安全</div><div class="small muted">云同步 · 加密 · 多端登录</div></div><span class="badge good"><i class="fa-solid fa-cloud"></i>正常</span></div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">端到端加密</div><div class="switch on"></div></div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">登录验证（生物识别）</div><div class="switch on"></div></div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">分类与标签</div><div class="small muted">支持自定义、合并、排序</div></div><span class="badge">管理</span></div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">预算与提醒</div><div class="switch on"></div></div>
+            <div class="divider"></div>
+            <div class="row"><div class="small muted">扫描与OCR（高清）</div><a class="badge" href="#premium">会员</a></div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">隐私与权限</div><div class="small muted">相机/语音/通知权限可单独关闭</div></div><i class="fa-solid fa-shield" style="color:rgba(56,217,150,.95);"></i></div>
+          </div>
+          <div class="two" style="margin-top:auto;">
+            <a class="btn" href="#help" style="justify-content:center;">帮助与反馈</a>
+            <a class="btn primary" href="#export" style="justify-content:center;"><i class="fa-solid fa-file-export"></i>导出/备份</a>
+          </div>` },
+
+        { group: "我的", id: "export", icon: "fa-file-export", tag: "1", title: "导出 / 备份", desc: "CSV/Excel导出、云备份、数据迁移与恢复", actions: [{ href: "#premium", text: "会员", icon: "fa-crown" }], html: `
+          <div class="nav">
+            <a class="ib" href="#settings"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">导出/备份</div>
+            <div class="ib"><i class="fa-solid fa-download"></i></div>
+          </div>
+          <div class="card">
+            <div class="row"><div><div class="h2">导出数据</div><div class="small muted">按时间/账户/分类筛选</div></div><span class="badge">CSV</span></div>
+            <div class="divider"></div>
+            <div class="list">
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-file-csv"></i></div><div><div class="it">导出 CSV</div><div class="is">便于Excel与BI分析</div></div><span class="badge">导出</span></div>
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-file-excel"></i></div><div><div class="it">导出 Excel</div><div class="is">含分类/标签/账户</div></div><span class="badge">导出</span></div>
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-database"></i></div><div><div class="it">完整备份</div><div class="is">可恢复到任意设备</div></div><span class="badge warn">会员</span></div>
+            </div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">恢复与迁移</div><div class="small muted">支持本地文件/云端恢复</div></div><span class="badge">安全校验</span></div>
+          </div>` },
+
+        { group: "我的", id: "premium", icon: "fa-crown", tag: "1", title: "会员订阅", desc: "高级OCR、自动预算建议、跨设备实时同步、AI洞察增强", actions: [{ href: "#help", text: "常见问题", icon: "fa-circle-question" }], html: `
+          <div class="nav">
+            <a class="ib" href="#me"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">会员</div>
+            <div class="badge good"><i class="fa-solid fa-gift"></i>试用</div>
+          </div>
+          <div class="card">
+            <div class="row"><div><div class="h2">Pro 订阅</div><div class="small muted">让记账“更自动、更聪明”</div></div><i class="fa-solid fa-crown" style="color:rgba(255,176,32,.95);"></i></div>
+            <div class="divider"></div>
+            <div class="list">
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-camera"></i></div><div><div class="it">高清OCR</div><div class="is">更高识别率与字段结构化</div></div><span class="badge good">Pro</span></div>
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-lightbulb"></i></div><div><div class="it">AI洞察增强</div><div class="is">异常识别/建议预算/节流提示</div></div><span class="badge good">Pro</span></div>
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-cloud"></i></div><div><div class="it">实时同步</div><div class="is">多端实时合并与冲突处理</div></div><span class="badge good">Pro</span></div>
+            </div>
+          </div>
+          <div class="row" style="gap:10px;margin-top:auto;">
+            <a class="btn" href="#settings" style="flex:1;justify-content:center;">稍后</a>
+            <a class="btn primary" href="#home" style="flex:1;justify-content:center;"><i class="fa-solid fa-check"></i>开通</a>
+          </div>` },
+
+        { group: "我的", id: "help", icon: "fa-circle-question", tag: "1", title: "帮助与反馈", desc: "常见问题、反馈、隐私说明、联系渠道", actions: [{ href: "#home", text: "返回首页", icon: "fa-house" }], html: `
+          <div class="nav">
+            <a class="ib" href="#settings"><i class="fa-solid fa-chevron-left"></i></a>
+            <div class="t">帮助与反馈</div>
+            <div class="ib"><i class="fa-solid fa-pen"></i></div>
+          </div>
+          <div class="card">
+            <div class="h2">常见问题</div>
+            <div class="divider"></div>
+            <div class="list">
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-robot"></i></div><div><div class="it">AI识别不准怎么办？</div><div class="is">可在确认页修改并保存规则</div></div><span class="badge">查看</span></div>
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-cloud"></i></div><div><div class="it">多端同步冲突如何处理？</div><div class="is">以时间+金额+商户匹配，冲突进入待处理</div></div><span class="badge">查看</span></div>
+              <div class="item" style="grid-template-columns:42px 1fr auto;"><div class="ico"><i class="fa-solid fa-shield"></i></div><div><div class="it">隐私与授权说明</div><div class="is">支持只读授权与随时撤销</div></div><span class="badge">查看</span></div>
+            </div>
+          </div>
+          <div class="card soft">
+            <div class="row"><div><div class="h3">提交反馈</div><div class="small muted">截图/日志（可选）帮助定位问题</div></div><span class="badge good"><i class="fa-solid fa-paper-plane"></i>发送</span></div>
+          </div>` }
+      ];
+
+      function tabs(activeId){
+        const items = [
+          { id:"home", icon:"fa-house", text:"首页" },
+          { id:"ledger", icon:"fa-list", text:"明细" },
+          { id:"ai-chat", icon:"fa-wand-magic-sparkles", text:"AI" },
+          { id:"analytics", icon:"fa-chart-simple", text:"统计" },
+          { id:"me", icon:"fa-user", text:"我的" },
+        ];
+        return `<div class="tabs">` + items.map(it => {
+          const on = it.id === activeId ? "active" : "";
+          return `<a class="tab ${on}" href="#${it.id}"><i class="fa-solid ${it.icon}"></i><span>${it.text}</span></a>`;
+        }).join("") + `</div>`;
+      }
+
+      function elFrom(html){
+        const t = document.createElement("template");
+        t.innerHTML = html.trim();
+        return t.content.firstElementChild;
+      }
+
+      function render(){
+        const toc = document.getElementById("toc");
+        const grid = document.getElementById("grid");
+        const tpl = document.getElementById("boardTpl");
+
+        const grouped = screens.reduce((acc, s) => {
+          acc[s.group] ||= [];
+          acc[s.group].push(s);
+          return acc;
+        }, {});
+
+        toc.innerHTML = Object.keys(grouped).map(g => {
+          const links = grouped[g].map(s => `
+            <a href="#${s.id}" data-id="${s.id}">
+              <i class="fa-solid ${s.icon}"></i><span>${s.title}</span><span class="tag">${s.tag}</span>
+            </a>
+          `).join("");
+          return `<h3>${g}</h3>${links}`;
+        }).join("");
+
+        for (const s of screens){
+          const node = tpl.content.cloneNode(true);
+          const section = node.querySelector("section");
+          section.id = s.id;
+          section.querySelector(".title").innerHTML = `<i class="fa-solid ${s.icon}"></i>${s.title}`;
+          section.querySelector(".desc").textContent = s.desc;
+
+          const actions = section.querySelector(".actions");
+          actions.innerHTML = (s.actions || []).map(a =>
+            `<a class="btn ${a.primary ? "primary" : ""}" href="${a.href}"><i class="fa-solid ${a.icon}"></i>${a.text}</a>`
+          ).join("");
+
+          section.querySelector(".screen").innerHTML = s.html;
+          grid.appendChild(node);
+        }
+
+        const links = Array.from(toc.querySelectorAll("a[data-id]"));
+        const io = new IntersectionObserver((entries) => {
+          for (const e of entries){
+            if (!e.isIntersecting) continue;
+            const id = e.target.getAttribute("id");
+            links.forEach(a => a.classList.toggle("active", a.dataset.id === id));
+          }
+        }, { root: null, threshold: 0.18 });
+
+        screens.forEach(s => {
+          const sec = document.getElementById(s.id);
+          if (sec) io.observe(sec);
+        });
+      }
+
+      render();
+    </script>
+  </body>
+</html>
